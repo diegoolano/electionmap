@@ -1,0 +1,44 @@
+	body{ background: #ccc; min-width:1435px; min-height:779px; overflow-x:visible; }
+	ul{margin-top:10px; padding-left:10px; margin-left:5px;}
+	.repstats ul{margin-top:1px; margin-bottom:1px;}
+	.repstats a{color:inherit; text-decoration:none;}
+	ul a{color: #000;}
+	.counties { fill: none; }
+	.states { fill: none; stroke: #fff; stroke-linejoin: round; }
+	.selected{ fill: white;}
+	.q0-9 { fill:rgb(221,75,57); }  /*repub*/
+	.q1-9 { fill:rgb(222,235,247); }
+	.q2-9 { fill:rgb(198,219,239); }
+	.q3-9 { fill:white; }
+	.q4-9 { fill:rgb(107,174,214); }
+	.q5-9 { fill:rgb(66,146,198); }
+	.q6-9 { fill:rgb(33,113,181); }
+	.q7-9 { fill:rgb(8,81,156); }
+	.q8-9 { fill:rgb(8,48,107); }  /* democrat */
+	.island{ fill:rgb(8,48,107);}
+
+	.gopwhite{ fill:white;}
+	.hardcoregopwhite{ fill:white;}
+	.demwhite{ fill:white;}
+	.islandwhite{ fill:white;}
+	.hardcoredemwhite{ fill:white;}
+	.demwhiteisland{ fill:white;}
+	.yellow{fill:yellow;}
+	.demstats a{ text-decoration:none;}
+
+/*
+	.party{position:absolute; top:0px; right: 500px; font-size:12px; z-index:10}
+	.statement{position:fixed; padding: 0 0 20px 20px; top:520px; left: 360px; font-size:13px; max-width:600px; max-height: 405px; z-index:20; overflow-y:hidden; background:#ccc}
+	.demstats{position:absolute; top:10px; left: 5px; font-size:12px;}
+	.repstats{position:absolute; top:0px; right: 10px; font-size:12px;}
+	.intro{position:fixed; bottom:10px; left: 230px; font-size:13px; margin-bottom: 20px; line-height:15px; background: #ccc; z-index:10}
+*/
+	.party{position:absolute; top:0px; left: 636px; font-size:12px; z-index:10}
+	.statement{position:fixed; padding: 0 0 20px 20px; top:500px; left: 200px; font-size:13px; max-width:850px; max-height: 500px; z-index:20; overflow-y:hidden; background:#ccc}
+        .statement table { border: black 1px solid;}
+        .statement table tr{ vertical-align:top;}
+	.demstats{position:absolute; top:10px; left: 5px; font-size:12px; z-index:10}
+	.repstats{position:absolute; top:0px; left: 1086px; font-size:12px; z-index:50; background: #ccc}
+	.repstats table{min-width:337px}
+	.intro{position:fixed; bottom:10px; left: 220px; font-size:18px; margin-bottom: 10px; line-height:20px; background: #ccc; z-index:50; padding:20px 0 0 20px;}
+	 svg{background:#ccc;}
