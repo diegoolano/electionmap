@@ -12,7 +12,7 @@ To see the visualization in action go to:   www.diegoolano.com/electionmap/
 
 interactivity options
 =====================
-![Rollover County View] https://raw.github.com/diegoolano/electionmap/master/images/blueislands-initial.png
+![Rollover County View](https://raw.github.com/diegoolano/electionmap/master/images/blueislands-initial.png)
 
 You can rollover a county and below the map, there will appear information providing:
 * the county name
@@ -29,15 +29,15 @@ You can rollover a county and below the map, there will appear information provi
 
 Clicking on a county will zoom in on the map and highlight the county in yellow.  To zoom back out, just click on the selected yellow county again. 
 
-![Clicking on Blue Islands] https://raw.github.com/diegoolano/electionmap/master/images/blueislands-on.png
+![Clicking on Blue Islands](https://raw.github.com/diegoolano/electionmap/master/images/blueislands-on.png)
 
 You may also click on any of the column headers to toggle on/off those counties listed in the map.  In the above example, the BLUE ISLANDS header has been selected.
 
 Additionally you may click on individual county names listed in the columns to select/unselect them on the map.
 
 The image below shows the headings for HEAVIEST GOP (90% up) and BLUE STATES being selected.
-![HEAVIEST GOP PERCENT] https://raw.github.com/diegoolano/electionmap/master/images/blueislands-heaviest-gop-percentages.png
-![BLUESTATES HEADER CLICKED] https://raw.github.com/diegoolano/electionmap/master/images/blueislands-bluestates.png
+![HEAVIEST GOP PERCENT](https://raw.github.com/diegoolano/electionmap/master/images/blueislands-heaviest-gop-percentages.png)
+![BLUESTATES HEADER CLICKED](https://raw.github.com/diegoolano/electionmap/master/images/blueislands-bluestates.png)
  
 
 
