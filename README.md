@@ -11,7 +11,7 @@ To see the visualization in action go to:   www.diegoolano.com/electionmap/
 
 interactivity options
 =====================
-![Rollover County View](https://raw.github.com/diegoolano/electionmap/master/images/blueislands-initial.png)
+![Rollover County View](https://raw.github.com/diegoolano/electionmap/master/version2-home.png)
 
 You can rollover a county and below the map, there will appear information providing:
 * the county name
