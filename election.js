@@ -178,7 +178,8 @@ if(initialwindow_height < 779)
 	//TODO
 	//bring up statement div
 	//currenttop = 500 - (.5 * ( 779 - initialwindow_height) );
-	if(initialwindow_height > 600){currenttop = 500 - (.5 * ( 779 - initialwindow_height) );}
+	//if(initialwindow_height > 600){currenttop = 500 - (.5 * ( 779 - initialwindow_height) );}
+	if(initialwindow_height > 600){currenttop = 445 - (.5 * ( 779 - initialwindow_height) );}
 	else{ currenttop = 400;}
 	jQuery(".statement").css("top",currenttop+"px");	
 
@@ -205,14 +206,6 @@ var svg = d3.select("body").append("svg")
     .attr("style", "position:fixed; left:170px")
     .attr("height", height);
 
-function find_votes(d,tag)
-{
-	for(var i=1; i < 17; i++)
-	{
-		party = "Party"+i;
-		if(d[party] == tag) {	return d["Votes"+i]; }
-	}
-}
 counties_won_dems = 0; dems_votes = 0;
 counties_won_gops = 0; gops_votes = 0;
 
@@ -234,87 +227,46 @@ var biggest_red = [];
 
 var metros = [];
 var socioeconim = [];
+var thisd = "";
 
-    //.defer(d3.csv, "measureofamerica_counties2013-14.csv",function(d){ socioeconim.push(d);}) 
 queue()
     .defer(d3.json, "us.json")
     .defer(d3.csv, "nodupes_zip.csv", function(d){ metros.push(d);}) 
-    .defer(d3.csv, "measureofamerica_counties2013-14.csv",function(d){ if(d.year == 2010) socioeconim[d.fips] = d;}) 
-    .defer(d3.csv, "smaller2012president.csv", 
+    .defer(d3.csv, "finaldata-withblueislands.csv", 
 	function(d) { 
+		thisd = d;
 		all_recs.push(d);
-		dem_num = parseInt(find_votes(d,"Dem"));
-		gop_num = parseInt(find_votes(d,"GOP"));
+		socioeconim[d.fips] = d;
+		dem_num = parseInt(d["dem"]);
+		gop_num = parseInt(d["rep"]);
 
 		all_lines_handled_counter++;
-		if( d.FIPSCode != 0)
-		{
-			dems_votes += dem_num;
-			gops_votes += gop_num;
-			if( dem_num > gop_num ){ 
-				amount = 0.99; 
-				counties_won_dems++;
-				biggest_blue.push([d.CountyName+","+d.StatePostal,dem_num,gop_num,d.FIPSCode]);
-			} 
-			else
-			{
-				counties_won_gops++;
-				amount = 0.01;
-				biggest_red.push([d.CountyName+","+d.StatePostal,gop_num,dem_num,d.FIPSCode]);
-			}
-
-			if( d.FIPSCode in fips_seen)
-			{
-				if( d.FIPSCode in duplicate_fips){
-					duplicate_fips[d.FIPSCode]["counter"]++;
-					duplicate_fips[d.FIPSCode]["towns"].push(d.CountyName+", "+d.StatePostal);
-					duplicate_fips[d.FIPSCode]["votes"]["dems"]+=dem_num;
-					duplicate_fips[d.FIPSCode]["votes"]["gops"]+=gop_num;
-				}
-				else{ 
-					duplicate_fips[d.FIPSCode] = []; 
-					duplicate_fips[d.FIPSCode]["counter"]=1; 
-					duplicate_fips[d.FIPSCode]["towns"]=[]; 
-					duplicate_fips[d.FIPSCode]["towns"].push(d.CountyName+", "+d.StatePostal);
-					duplicate_fips[d.FIPSCode]["votes"]=[];
-					duplicate_fips[d.FIPSCode]["votes"]["dems"]=dem_num;
-					duplicate_fips[d.FIPSCode]["votes"]["gops"]=gop_num;
-				}
-				errors_encountered++;
-			}
-			else
-			{
-				fips_seen[d.FIPSCode] = d;
-				lines_handled_counter++;
-
-				if(dem_num > gop_num){
-					margin = (100 * dem_num) / (gop_num+dem_num);
-					if(margin > 85) mostblue.push([margin.toFixed(2),d.CountyName+", "+d.StatePostal, d.FIPSCode]);
-				}
-				else{
-					margin = (100 * gop_num) / (gop_num+dem_num);
-					if(margin > 90) mostred.push([margin.toFixed(2),d.CountyName+", "+d.StatePostal, d.FIPSCode]);
-				}
-				rateById.set(d.FIPSCode, [amount,d.CountyName,dem_num,gop_num]);
-			}
-		}
+		dems_votes += dem_num;
+		gops_votes += gop_num;
+		if( dem_num > gop_num ){ 
+			amount = 0.99; 
+			counties_won_dems++;
+			biggest_blue.push([d.county+","+d["state.x"],dem_num,gop_num,d.fips]);
+		} 
 		else
 		{
-		  if(dem_num > gop_num)	
-		  {
-                   if(d.CountyName != "District of Columbia")
-			{ 
-				 demstates++;
-		   		percent = (100 * dem_num)/(gop_num + dem_num);
-		   		demarray.push([d.CountyName,percent.toFixed(2)]);
-			}
-		   }
-		   else{ 
-		   	repstates++;
-		   	percent = (100 * gop_num)/(gop_num + dem_num);
-		   	reparray.push([d.CountyName,percent.toFixed(2)]);
-		   }
+			counties_won_gops++;
+			amount = 0.01;
+			biggest_red.push([d.county+","+d["state.x"],gop_num,dem_num,d.fips]);
 		}
+
+		fips_seen[d.fips] = d;
+		lines_handled_counter++;
+
+		if(dem_num > gop_num){
+			margin = (100 * dem_num) / (gop_num+dem_num);
+			if(margin > 85) mostblue.push([margin.toFixed(2),d.county+", "+d["state.x"], d.fips]);
+		}
+		else{
+			margin = (100 * gop_num) / (gop_num+dem_num);
+			if(margin > 90) mostred.push([margin.toFixed(2),d.county+", "+d["state.x"], d.fips]);
+		}
+		rateById.set(d.fips, [amount,d.county,dem_num,gop_num]);
 	})
     .await(ready);
 
@@ -370,7 +322,7 @@ function ready(error, us) {
 					  }
 					  if(blueneighbors == 0)
 					  {	
-						  blueislands.push([cur.id, fips_seen[cur.id]["CountyName"]+", "+fips_seen[cur.id]["StatePostal"], fips_seen[cur.id]["StatePostal"]]);
+						  blueislands.push([cur.id, fips_seen[cur.id]["county"]+", "+fips_seen[cur.id]["state.x"], fips_seen[cur.id]["state.x"]]);
 					     bluemap[cur.id]=1;
 					  }
 				  }
@@ -549,6 +501,12 @@ function get_cities(county, state)
 }
 
 var introatbottom = 0;
+var thiscd = "";
+
+function closeinfo(){
+	jQuery(".statement").hide();
+}
+
 function display_county_info(id)
 {
 	rd = rateById.get(id);
@@ -557,119 +515,195 @@ function display_county_info(id)
 	dem_num = rd[2];
 	gop_num = rd[3];
 	
-	cities = get_cities(fips_seen[id]["CountyName"], fips_seen[id]["StatePostal"]);
+	closediv = "<div id='closeinfo'><a href=\"javascript:closeinfo();\">close</a></div>";
+	statement = "";
+	cities = get_cities(fips_seen[id]["county"], fips_seen[id]["state.x"]);
 	if( dem_num > gop_num) 
 	{	
-		statement = "County: "+fips_seen[id]["CountyName"]+", "+fips_seen[id]["StatePostal"]+"<br/>Democrats(<span style='color:blue'>"+dem_num+"</span>) vs GOP("+gop_num+") with ";  	
+		statement += "County: "+fips_seen[id]["county"]+", "+fips_seen[id]["state.x"]+"<span style='padding-left:200px'>&nbsp;</span>Democrats(<span style='color:blue'>"+dem_num+"</span>) vs GOP("+gop_num+") with ";  	
 		margin = (100 * dem_num) / (gop_num+dem_num);
-		statement += "<span style='color:blue'>"+margin.toFixed(2)+" %</span> of vote<br/>";
+		statement += "<span style='color:blue'>"+margin.toFixed(2)+" %</span> of vote"+closediv+"<br/>";
 	}
 	else 
 	{
-		statement = "County: "+fips_seen[id]["CountyName"]+", "+fips_seen[id]["StatePostal"]+"<br/>Democrats("+dem_num+") vs GOP(<span style='color:red'>"+gop_num+"</span>) with ";  	
+		statement += "County: "+fips_seen[id]["county"]+", "+fips_seen[id]["state.x"]+"<span style='padding-left:200px'>&nbsp;</span>Democrats("+dem_num+") vs GOP(<span style='color:red'>"+gop_num+"</span>) with ";  	
 		margin = (100 * gop_num) / (gop_num+dem_num);
-		statement += "<span style='color:red'>"+margin.toFixed(2)+" %</span> of vote<br/>";
+		statement += "<span style='color:red'>"+margin.toFixed(2)+" %</span> of vote"+closediv+"<br/>";
 	}
 	
 	  statement += "<b><span id='inc' style='cursor:pointer; color:blue;'>-</span> cities:</b><span id='includes'>"+cities+"</span>";
 	//now add FIPS info!
 	cs = socioeconim[id];
-	
+	thiscd = cs;
+
         statement += "<br/><b><span id='sinc' style='cursor:pointer; color:blue;'>-</span> socioeconomic indicators</b> (<font color='blue'>blue</font> means value is in top 3rd Quartile range, <font color='red'>red</font> means in lower 1st Quartile) <span id='sincludes'>";
-	statement += "<table><tr><td>Population <br/><span id='pop'>"+ cs['_total_population_']+"</span>";		// 15,080  - median 30,160 - 45,38
-	statement += "</td><td>Median earnings <br/><span id='earnings'>"+ cs['median_earnings_(2010_dollars)']+"</span>";  //13,190 - median 24,940 - 36,570
-	statement += "</td><td>Income index <br/><span id='incomeindex'>"+ Math.round(10000 * (cs['incomeindex'] / 7.57))/100;   //between  1 and 7.57   , 2.98 - median 3.41 - 4.45
-	statement += "</span></td><td>Education Index <br/><span id='educationindex'>"+ Math.round(10000 * (cs['educationindex'] / 6.5))/100;  // between 1 and 6.5, 3.3 - median 3.96 - 4.6
-	statement += "</span></td><td>Gini Coeff. <br/>"+ cs['gini_coefficient']+"</td>";
+	statement += "<table><tr><td>Population <br/><span id='pop'>"+ cs['popul']+"</span>";		// 15,080  - median 30,160 - 45,38
+	statement += "</td><td>Median earnings <br/><span id='earnings'>"+ cs['earnings']+"</span>";  //13,190 - median 24,940 - 36,570
+	statement += "</td><td>Income index <br/><span id='incomei'>"+ Math.round(10000 * (cs['incomei'] / 7.57))/100;   //between  1 and 7.57   , 2.98 - median 3.41 - 4.45
+	statement += "</span></td><td>Education Index <br/><span id='educationi'>"+ Math.round(10000 * (cs['educationi'] / 6.5))/100;  // between 1 and 6.5, 3.3 - median 3.96 - 4.6
+	statement += "</span></td><td>Gini Coeff. <br/>"+ cs['gini']+"</td>";
 	
-	statement += "<td> White <br/><span id='white_not'>"+ cs['white_not_latino_population_(%)'];   //67 - mean 78% - 94
-	statement += "</span><td> African <br/><span id='african'>"+ cs['african_american_population_(%)'];	//.4 - mean 8.76 - 9.9
-	statement += "</span></td><td> Asian <br/><span id='asian'>"+ cs['asian_american_population_(%)']; //.2 - mean .5 - 1
-	statement += "</span></td><td> Latino <br/><span id='latino'>"+ cs['latino_population_(%)'];   // 1.4 - mean 7.9 - 7.7
-	statement += "</span></td><td> Native American <br/><span id='native'>"+ cs['native_american_population_(%)']; //.2 - .3 - .6     
-	statement += "</span></td><td> Other <br/>"+ cs['population_some_other_race_or_races_(%)'] + "</td></tr></table>";//other 1.1 -1.6 - 2.2
+	statement += "<td> White <br/><span id='white_not'>"+ cs['white'];   //67 - mean 78% - 94
+	statement += "</span><td> African <br/><span id='african'>"+ cs['afric'];	//.4 - mean 8.76 - 9.9
+	statement += "</span></td><td> Asian <br/><span id='asian'>"+ cs['asian']; //.2 - mean .5 - 1
+	statement += "</span></td><td> Latino <br/><span id='latino'>"+ cs['latin'];   // 1.4 - mean 7.9 - 7.7
+	statement += "</span></td><td> Native American <br/><span id='native'>"+ cs['nativ']; //.2 - .3 - .6     
+	statement += "</span></td><td> Other <br/>"+ cs['other'] + "</td></tr></table>";//other 1.1 -1.6 - 2.2
 
-	statement += "<table><tr><td>Below Federal Poverty Threshold <br/><span id='poverty_rate'>"+ cs['poverty_rate_(%_below_federal_poverty_threshold)'];  //10.9 - 14.6 - 18.9
-	statement += "</span></td><td>Children under 6 in poverty <br/><span id='under6'>"+ cs['children_under_6_living_in_poverty_(%)'];  // 16.3 - 23.7 - 31.9
-	statement += "</span></td><td>Childern living in poverty <br/><span id='child_poverty'>"+ cs['child_poverty_(%_living_in_families_below_the_poverty_line)']; // 14.1 - 20.1 - 26.5
-	statement += "</span></td><td>Adults 65 and up in poverty <br/><span id='over65'>"+ cs['adults_65_and_older_living_in_poverty_(%)'] + "</span></td></tr></table>"; // 7.6 - 11.48 - 14.1
+	statement += "<table><tr><td>Below Federal Poverty Threshold <br/><span id='poverty_rate'>"+ cs['belowpov'];  //10.9 - 14.6 - 18.9
+	statement += "</span></td><td>Children under 6 in poverty <br/><span id='under6'>"+ cs['childpov.x'];  // 16.3 - 23.7 - 31.9
+	statement += "</span></td><td>Childern living in poverty <br/><span id='child_poverty'>"+ cs['childpov.x']; // 14.1 - 20.1 - 26.5
+	statement += "</span></td><td>Adults 65 and up in poverty <br/><span id='over65'>"+ cs['povo65'] + "</span></td></tr></table>"; // 7.6 - 11.48 - 14.1
 
-	statement += "<table><tr><td>less than highschool <br/><span id='less_high'>"+ cs['less_than_high_school_(%)'];  //11.4 - 15.4 - 21.6
-	statement += "</span></td><td>at least high school <br/><span id='least_high'>"+ cs['at_least_high_school_diploma(%)'];  //78.4 - 84 - 88.6
-	statement += "</span></td><td>at least bachelors <br/><span id='least_bach'>"+ cs['at_least_bachelors_degree(%)']; // 13.1 - 16.9 - 22.60
-	statement += "</span></td><td>graduate degree <br/><span id='grad'>"+ cs['graduate_degree(%)'];  // 4.0 - 5.3 - 7.7
-	statement += "</span></td><td>Preschool Enrollment <br/><span id='preschool'>"+ cs['preschool_enrollment_ratio_(%_enrolled_ages_3_and_4)'];  // 34.7 - 43 - 51.7
-	statement += "</span></td><td>School enrollment <br/><span id='school_enrollment'>"+ cs['school_enrollment(%)'] + "</span></td></tr></table>";  // 72.2 - 75.2 - 78.1
+	cs['atleasthighschooldiploma'] = 100 - parseFloat(cs['lesshs']);
 
-	statement += "<table><tr><td>Construction/repair <br/><span id='construction'>"+ cs['construction,_extraction,_maintenance_and_repair_occupations_(%)']; // 9.2 - 11.1 - 13.3
-	statement += "</span></td><td>Farming/fishing/forestry <br/><span id='fishing'>"+ cs['farming,_fishing,_and_forestry_occupations_(%)'];  // .5 - 1.2 - 2.7
-	statement += "</span></td><td>Management/professional <br/><span id='management'>"+ cs['management,_professional,_and_related_occupations_(%)']; // 25.5 - 29.8 - 33.1
-	statement += "</span></td><td>Production/transport <br/><span id='production'>"+ cs['production,_transportation,_and_material_moving_occupations_(%)']; // 11.7 - 15.7 - 20.2
-	statement += "</span></td><td>Sales/office <br/><span id='sales'>"+ cs['sales_and_office_occupations_(%)'];  //20.7 - 23 - 25.4
-	statement += "</span></td><td>Service <br/><span id='services'>"+ cs['service_occupations_(%)_'] + "</span></td></tr></table></span>"; //15.2 - 17.44 - 19.2
+	statement += "<table><tr><td>less than highschool <br/><span id='less_high'>"+ cs['lesshs'];  //11.4 - 15.4 - 21.6
+	statement += "</span></td><td>at least high school <br/><span id='least_high'>"+ cs['atleasthighschooldiploma'];  //78.4 - 84 - 88.6
+	statement += "</span></td><td>at least bachelors <br/><span id='least_bach'>"+ cs['leastbach']; // 13.1 - 16.9 - 22.60
+	statement += "</span></td><td>graduate degree <br/><span id='grad'>"+ cs['graduate'];  // 4.0 - 5.3 - 7.7
+	statement += "</span></td><td>Preschool Enrollment <br/><span id='preschool'>"+ cs['preschl'];  // 34.7 - 43 - 51.7
+	statement += "</span></td><td>School enrollment <br/><span id='school_enrollment'>"+ cs['enrollp'] + "</span></td></tr></table>";  // 72.2 - 75.2 - 78.1
+
+	servicenum = Math.round((100 - (parseFloat(cs['wconstruct'])  + parseFloat(cs['wfarm'])  + parseFloat(cs['wmanage'])  + parseFloat(cs['wsales'])  + parseFloat(cs["wtransport"]))) * 100)/100;
+	cs['serviceoccupations'] = servicenum;
+
+	statement += "<table><tr><td>Construction/repair <br/><span id='construction'>"+ cs['wconstruct']; // 9.2 - 11.1 - 13.3
+	statement += "</span></td><td>Farming/fishing/forestry <br/><span id='fishing'>"+ cs['wfarm'];  // .5 - 1.2 - 2.7
+	statement += "</span></td><td>Management/professional <br/><span id='management'>"+ cs['wmanage']; // 25.5 - 29.8 - 33.1
+	statement += "</span></td><td>Production/transport <br/><span id='production'>"+ cs['wtransport']; // 11.7 - 15.7 - 20.2
+	statement += "</span></td><td>Sales/office <br/><span id='sales'>"+ cs['wsales'];  //20.7 - 23 - 25.4
+	statement += "</span></td><td>Service <br/><span id='services'>"+ cs['serviceoccupations'] + "</span></td></tr></table></span>"; //15.2 - 17.44 - 19.2
 			
 	if(introatbottom == 0)
 	{
 		jQuery(".intro").css("position","absolute"); introheight = jQuery(document).height() - 120; jQuery(".intro").css("bottom",""); jQuery(".intro").css("top",introheight+"px");
 		jQuery(".intro").css("z-index","500");jQuery(".intro").css("width","850px"); jQuery(".intro").css("height","150px"); introatbottom = 1;
 	}	
+
+	//now add public health info!!
+	
+        statement += "<b><span id='pinc' style='cursor:pointer; color:blue;'>-</span> public health indicators</b> (<font color='blue'>blue</font> means value is in lower 1st quartile, <font color='red'>red</font> means in higher 3rd Quartile) <span id='pincludes'>";
+
+	phvars = ["female","adultobese","airpollutionq","ambulatorycare","dentistratio","diabectic","drivealone","excsdrinking","fairpoorhealth","fastfoodresp","freelunch","gini","healthcosts","healthyfood","illiteracy","lowbirthrate","mammography","mentaldays","motordeath","mphratio","noemotionalsupport","noenglish","physicianratio","recfac","rural","sickdays","singleparent","smokers","stdsper100","teenbirthrate","unemployed","uninsured.x","violentcrime"];
+	
+	for(var i=0; i < phvars.length; i++)
+	{
+		if( i == 0 ){
+			 statement += "<table><tr><td>male<br/><span id='male'>"+ Math.round((100 - parseFloat(cs['female']))*100)/100+"</span></td>";
+			 statement += "<td>female<br/><span id='female'>"+ cs['female']+"</span></td>";
+		}
+		else
+		{
+			if(phvars[i].indexOf("ratio") > -1)
+			{
+			 pieces = cs[phvars[i]].split(":");
+			 if(pieces[1] == "0")
+			 	statement += "<td>"+phvars[i]+"<br/><span id='"+phvars[i]+"'>"+ cs[phvars[i]] +"</span></td>";
+			 else
+			 	statement += "<td>"+phvars[i]+"<br/><span id='"+phvars[i]+"'>"+ Math.round(((pieces[1] * 100)/pieces[0])*100)/100+"</span></td>";
+			}
+			else{
+				//TODO: check if NA or not
+			 statement += "<td>"+phvars[i]+"<br/><span id='"+phvars[i]+"'>"+ Math.round((cs[phvars[i]])*100)/100+"</span></td>";
+			}
+		}
+
+		if( i > 9)
+		{
+			if(i % 10 == 0 && i > 13 && i < 30) statement += "</tr></table><table><tr>";
+		}
+		else
+		{
+			if(i == 9) statement += "</tr></table><table><tr>";
+		}
+	}
+	statement += "</tr></table>";
+
+
 	document.getElementsByClassName("statement")[0].innerHTML = statement;
 
-	//console.log("current fip: "+id);
-	if(typeof(cs['_total_population_']) != "number") cs['_total_population_'] = parseFloat(cs['_total_population_'].trim().replace(",","").replace(",",""));
-	if(typeof(cs['median_earnings_(2010_dollars)']) != "number") cs['median_earnings_(2010_dollars)'] = parseFloat(cs['median_earnings_(2010_dollars)'].trim().replace(",","").replace(",",""));
-	if(typeof(cs['incomeindex']) != "number") cs['incomeindex'] = parseFloat(cs['incomeindex'].trim().replace(",",""));
-	if(typeof(cs['educationindex']) != "number") cs['educationindex'] = parseFloat(cs['educationindex'].trim().replace(",",""));
-	if(cs['_total_population_'] < 15080){ jQuery("#pop").css("color","red");} if(cs['_total_population_'] > 45380){ jQuery("#pop").css("color","blue");}
-	if(cs['median_earnings_(2010_dollars)'] < 13190){ jQuery("#earnings").css("color","red");} if(cs['median_earnings_(2010_dollars)'] > 36570){ jQuery("#earnings").css("color","blue");} 
-	if(cs['incomeindex'] < 2.98){ jQuery("#incomeindex").css("color","red");} if(cs['incomeindex'] > 4.45){ jQuery("#incomeindex").css("color","blue"); }
-	if(cs['educationindex'] < 3.3){ jQuery("#educationindex").css("color","red");} if(cs['educationindex'] > 4.6){ jQuery("#educationindex").css("color","blue");} 
+	//TODO:  make this much simpler than old method was
+	if(typeof(cs['popul']) != "number") cs['popul'] = parseFloat(cs['popul'].trim().replace(",","").replace(",",""));
+	if(typeof(cs['earnings']) != "number") cs['earnings'] = parseFloat(cs['earnings'].trim().replace(",","").replace(",",""));
+	if(typeof(cs['incomei']) != "number") cs['incomei'] = parseFloat(cs['incomei'].trim().replace(",",""));
+	if(typeof(cs['educationi']) != "number") cs['educationi'] = parseFloat(cs['educationi'].trim().replace(",",""));
+	if(cs['popul'] < 15080){ jQuery("#pop").css("color","red");} if(cs['popul'] > 45380){ jQuery("#pop").css("color","blue");}
+	if(cs['earnings'] < 13190){ jQuery("#earnings").css("color","red");} if(cs['earnings'] > 36570){ jQuery("#earnings").css("color","blue");} 
+	if(cs['incomei'] < 2.98){ jQuery("#incomei").css("color","red");} if(cs['incomei'] > 4.45){ jQuery("#incomei").css("color","blue"); }
+	if(cs['educationi'] < 3.3){ jQuery("#educationi").css("color","red");} if(cs['educationi'] > 4.6){ jQuery("#educationi").css("color","blue");} 
 	
-	if(typeof(cs['white_not_latino_population_(%)']) != "number") cs['white_not_latino_population_(%)'] = parseFloat(cs['white_not_latino_population_(%)'].trim().replace(",",""));
-	if(typeof(cs['african_american_population_(%)']) != "number")cs['african_american_population_(%)'] = parseFloat(cs['african_american_population_(%)'].trim().replace(",",""));
-	if(typeof(cs['asian_american_population_(%)']) != "number")cs['asian_american_population_(%)'] = parseFloat(cs['asian_american_population_(%)'].trim().replace(",",""));
-	if(typeof(cs['latino_population_(%)']) != "number")cs['latino_population_(%)'] = parseFloat(cs['latino_population_(%)'].trim().replace(",",""));
-	if(typeof(cs['native_american_population_(%)']) != "number")cs['native_american_population_(%)'] = parseFloat(cs['native_american_population_(%)'].trim().replace(",",""));
-	if(cs['white_not_latino_population_(%)'] < 67){ jQuery("#white_not").css("color","red");} if(cs['white_not_latino_population_(%)'] > 94){ jQuery("#white_not").css("color","blue"); }
-	if(cs['african_american_population_(%)'] < .4){ jQuery("#african").css("color","red");} if(cs['african_american_population_(%)'] > 9.9){ jQuery("#african").css("color","blue"); }
-	if(cs['asian_american_population_(%)'] < .2){ jQuery("#asian").css("color","red");} if(cs['asian_american_population_(%)'] > 1){ jQuery("#asian").css("color","blue"); }
-	if(cs['latino_population_(%)'] < 1.4){ jQuery("#latino").css("color","red");} if(cs['latino_population_(%)'] > 7.7){ jQuery("#latino").css("color","blue"); }
-	if(cs['native_american_population_(%)'] < .2){ jQuery("#native").css("color","red");} if(cs['native_american_population_(%)'] > .6){ jQuery("#native").css("color","blue");} 
+	if(typeof(cs['white']) != "number") cs['white'] = parseFloat(cs['white'].trim().replace(",",""));
+	if(typeof(cs['afric']) != "number")cs['afric'] = parseFloat(cs['afric'].trim().replace(",",""));
+	if(typeof(cs['asian']) != "number")cs['asian'] = parseFloat(cs['asian'].trim().replace(",",""));
+	if(typeof(cs['latin']) != "number")cs['latin'] = parseFloat(cs['latin'].trim().replace(",",""));
+	if(typeof(cs['nativ']) != "number")cs['nativ'] = parseFloat(cs['nativ'].trim().replace(",",""));
+	if(cs['white'] < 67){ jQuery("#white_not").css("color","red");} if(cs['white'] > 94){ jQuery("#white_not").css("color","blue"); }
+	if(cs['afric'] < .4){ jQuery("#african").css("color","red");} if(cs['afric'] > 9.9){ jQuery("#african").css("color","blue"); }
+	if(cs['asian'] < .2){ jQuery("#asian").css("color","red");} if(cs['asian'] > 1){ jQuery("#asian").css("color","blue"); }
+	if(cs['latin'] < 1.4){ jQuery("#latino").css("color","red");} if(cs['latin'] > 7.7){ jQuery("#latino").css("color","blue"); }
+	if(cs['nativ'] < .2){ jQuery("#native").css("color","red");} if(cs['nativ'] > .6){ jQuery("#native").css("color","blue");} 
 
-	if(typeof(cs['poverty_rate_(%_below_federal_poverty_threshold)']) != "number") cs['poverty_rate_(%_below_federal_poverty_threshold)'] = parseFloat(cs['poverty_rate_(%_below_federal_poverty_threshold)'].trim().replace(",","").replace(",",""));  //10.9 - 14.6 - 18.9
-	if(typeof(cs['children_under_6_living_in_poverty_(%)']) != "number") cs['children_under_6_living_in_poverty_(%)'] = parseFloat(cs['children_under_6_living_in_poverty_(%)'].trim().replace(",","").replace(",",""));  // 16.3 - 23.7 - 31.9
-	if(typeof(cs['child_poverty_(%_living_in_families_below_the_poverty_line)'])!= "number") cs['child_poverty_(%_living_in_families_below_the_poverty_line)'] = parseFloat(cs['child_poverty_(%_living_in_families_below_the_poverty_line)'].trim().replace(",","").replace(",",""));  // 14.1 - 20.1 - 26.5
-	if(typeof(cs['adults_65_and_older_living_in_poverty_(%)']) != "number") cs['adults_65_and_older_living_in_poverty_(%)'] = parseFloat(cs['adults_65_and_older_living_in_poverty_(%)'].trim().replace(",","").replace(",","")); // 7.6 - 11.48 - 14.1
-	if(cs['poverty_rate_(%_below_federal_poverty_threshold)'] < 10.9){ jQuery("#poverty_rate").css("color","red");} if(cs['poverty_rate_(%_below_federal_poverty_threshold)'] > 18.9){ jQuery("#poverty_rate").css("color","blue");}  
-	if(cs['children_under_6_living_in_poverty_(%)'] < 16.3){ jQuery("#under6").css("color","red");} if(cs['children_under_6_living_in_poverty_(%)'] > 31.9){ jQuery("#under6").css("color","blue");}  
-	if(cs['child_poverty_(%_living_in_families_below_the_poverty_line)'] < 14.1){ jQuery("#child_poverty").css("color","red");} if(cs['child_poverty_(%_living_in_families_below_the_poverty_line)'] > 26.5){ jQuery("#child_poverty").css("color","blue");}  
-	if(cs['adults_65_and_older_living_in_poverty_(%)'] < 7.6){ jQuery("#over65").css("color","red");} if(cs['adults_65_and_older_living_in_poverty_(%)'] > 14.1){ jQuery("#over65").css("color","blue");}  
+	if(typeof(cs['belowpov']) != "number") cs['belowpov'] = parseFloat(cs['belowpov'].trim().replace(",","").replace(",",""));  //10.9 - 14.6 - 18.9
+	if(typeof(cs['childpov.x']) != "number") cs['childpov.x'] = parseFloat(cs['childpov.x'].trim().replace(",","").replace(",",""));  // 16.3 - 23.7 - 31.9
+	if(typeof(cs['childpov.x'])!= "number") cs['childpov.x'] = parseFloat(cs['childpov.x'].trim().replace(",","").replace(",",""));  // 14.1 - 20.1 - 26.5
+	if(typeof(cs['povo65']) != "number") cs['povo65'] = parseFloat(cs['povo65'].trim().replace(",","").replace(",","")); // 7.6 - 11.48 - 14.1
+	if(cs['belowpov'] < 10.9){ jQuery("#poverty_rate").css("color","red");} if(cs['belowpov'] > 18.9){ jQuery("#poverty_rate").css("color","blue");}  
+	if(cs['childpov.x'] < 16.3){ jQuery("#under6").css("color","red");} if(cs['childpov.x'] > 31.9){ jQuery("#under6").css("color","blue");}  
+	if(cs['childpov.x'] < 14.1){ jQuery("#child_poverty").css("color","red");} if(cs['childpov.x'] > 26.5){ jQuery("#child_poverty").css("color","blue");}   //TODO: REMOVE
+	if(cs['povo65'] < 7.6){ jQuery("#over65").css("color","red");} if(cs['povo65'] > 14.1){ jQuery("#over65").css("color","blue");}  
 
-	if(typeof(cs['less_than_high_school_(%)']) != "number") cs['less_than_high_school_(%)'] = parseFloat(cs['less_than_high_school_(%)'].trim().replace(",","").replace(",","")); 
-	if(typeof(cs['at_least_high_school_diploma(%)']) != "number") cs['at_least_high_school_diploma(%)'] = parseFloat(cs['at_least_high_school_diploma(%)'].trim().replace(",","").replace(",",""));  //78.4 - 84 - 88.6
-	if(typeof(cs['at_least_bachelors_degree(%)']) != "number") cs['at_least_bachelors_degree(%)'] = parseFloat(cs['at_least_bachelors_degree(%)'].trim().replace(",","").replace(",",""));
-	if(typeof(cs['graduate_degree(%)']) != "number") cs['graduate_degree(%)'] = parseFloat(cs['graduate_degree(%)'].trim().replace(",","").replace(",","")); 
-	if(typeof(cs['preschool_enrollment_ratio_(%_enrolled_ages_3_and_4)'] ) != "number") cs['preschool_enrollment_ratio_(%_enrolled_ages_3_and_4)'] = parseFloat(cs['preschool_enrollment_ratio_(%_enrolled_ages_3_and_4)'].trim().replace(",","").replace(",","")); // 34.7 - 43 - 51.7
-	if(typeof(cs['school_enrollment(%)'] ) != "number") cs['school_enrollment(%)'] = parseFloat(cs['school_enrollment(%)'].trim().replace(",","").replace(",","")); // 72.2 - 75.2 - 78.1
-	if(cs['less_than_high_school_(%)'] < 11.4){ jQuery("#less_high").css("color","red");} if(cs['less_than_high_school_(%)'] > 21.6){ jQuery("#less_high").css("color","blue");}  
-	if(cs['at_least_high_school_diploma(%)'] < 78.4){ jQuery("#least_high").css("color","red");} if(cs['at_least_high_school_diploma(%)'] > 88.6){ jQuery("#least_high").css("color","blue");}  
-	if(cs['at_least_bachelors_degree(%)'] < 13.1){ jQuery("#least_bach").css("color","red");} if(cs['at_least_bachelors_degree(%)'] > 22.6){ jQuery("#least_bach").css("color","blue");}  
-	if(cs['graduate_degree(%)'] < 4.0){ jQuery("#grad").css("color","red");} if(cs['graduate_degree(%)'] > 7.7){ jQuery("#grad").css("color","blue");}  
-	if(cs['preschool_enrollment_ratio_(%_enrolled_ages_3_and_4)'] < 34.7){ jQuery("#preschool").css("color","red");} if(cs['preschool_enrollment_ratio_(%_enrolled_ages_3_and_4)'] > 51.7){ jQuery("#preschool").css("color","blue");}  
-	if(cs['school_enrollment(%)'] < 72.2){ jQuery("#school_enrollment").css("color","red");} if(cs['school_enrollment(%)'] > 78.1){ jQuery("#school_enrollment").css("color","blue");}  
+	if(typeof(cs['lesshs']) != "number") cs['lesshs'] = parseFloat(cs['lesshs'].trim().replace(",","").replace(",","")); 
+	if(typeof(cs['atleasthighschooldiploma']) != "number") cs['atleasthighschooldiploma'] = parseFloat(cs['atleasthighschooldiploma'].trim().replace(",","").replace(",",""));  //78.4 - 84 - 88.6
+	if(typeof(cs['leastbach']) != "number") cs['leastbach'] = parseFloat(cs['leastbach'].trim().replace(",","").replace(",","")); // TODO: REMOVE
+	if(typeof(cs['graduate']) != "number") cs['graduate'] = parseFloat(cs['graduate'].trim().replace(",","").replace(",","")); 
+	if(typeof(cs['preschl'] ) != "number") cs['preschl'] = parseFloat(cs['preschl'].trim().replace(",","").replace(",","")); // 34.7 - 43 - 51.7
+	if(typeof(cs['enrollp'] ) != "number") cs['enrollp'] = parseFloat(cs['enrollp'].trim().replace(",","").replace(",","")); // 72.2 - 75.2 - 78.1
+	if(cs['lesshs'] < 11.4){ jQuery("#less_high").css("color","red");} if(cs['lesshs'] > 21.6){ jQuery("#less_high").css("color","blue");}  
+	if(cs['atleasthighschooldiploma'] < 78.4){ jQuery("#least_high").css("color","red");} if(cs['atleasthighschooldiploma'] > 88.6){ jQuery("#least_high").css("color","blue");}  
+	if(cs['leastbach'] < 13.1){ jQuery("#least_bach").css("color","red");} if(cs['leastbach'] > 22.6){ jQuery("#least_bach").css("color","blue");}  
+	if(cs['graduate'] < 4.0){ jQuery("#grad").css("color","red");} if(cs['graduate'] > 7.7){ jQuery("#grad").css("color","blue");}  
+	if(cs['preschl'] < 34.7){ jQuery("#preschool").css("color","red");} if(cs['preschl'] > 51.7){ jQuery("#preschool").css("color","blue");}  
+	if(cs['enrollp'] < 72.2){ jQuery("#school_enrollment").css("color","red");} if(cs['enrollp'] > 78.1){ jQuery("#school_enrollment").css("color","blue");}  
 
-	if(typeof(cs['construction,_extraction,_maintenance_and_repair_occupations_(%)']) != "number") cs['construction,_extraction,_maintenance_and_repair_occupations_(%)'] = parseFloat(cs['construction,_extraction,_maintenance_and_repair_occupations_(%)'].trim().replace(",","").replace(",","")); 
-	if(typeof(cs['farming,_fishing,_and_forestry_occupations_(%)']) != "number") cs['farming,_fishing,_and_forestry_occupations_(%)'] = parseFloat(cs['farming,_fishing,_and_forestry_occupations_(%)'].trim().replace(",","").replace(",",""));
-	if(typeof(cs['management,_professional,_and_related_occupations_(%)']) != "number") cs['management,_professional,_and_related_occupations_(%)'] = parseFloat(cs['management,_professional,_and_related_occupations_(%)'].trim().replace(",","").replace(",",""));
-	if(typeof(cs['production,_transportation,_and_material_moving_occupations_(%)']) != "number") cs['production,_transportation,_and_material_moving_occupations_(%)'] = parseFloat(cs['production,_transportation,_and_material_moving_occupations_(%)'].trim().replace(",","").replace(",","")); 
-	if(typeof(cs['sales_and_office_occupations_(%)']) != "number") cs['sales_and_office_occupations_(%)'] = parseFloat(cs['sales_and_office_occupations_(%)'].trim().replace(",","").replace(",","")); 
-	if(typeof(cs['service_occupations_(%)_']) != "number") cs['service_occupations_(%)_'] = parseFloat(cs['service_occupations_(%)_'].trim().replace(",","").replace(",","")); 
-	if(cs['construction,_extraction,_maintenance_and_repair_occupations_(%)'] < 9.2 ){ jQuery("#construction").css("color","red");} if(cs['construction,_extraction,_maintenance_and_repair_occupations_(%)'] > 13.3){ jQuery("#construction").css("color","blue");} ; // 9.2 - 11.1 - 13.3
-	if(cs['farming,_fishing,_and_forestry_occupations_(%)'] < .5 ){ jQuery("#fishing").css("color","red");} if(cs['farming,_fishing,_and_forestry_occupations_(%)'] > 2.7){ jQuery("#fishing").css("color","blue");};  // .5 - 1.2 - 2.7
-	if(cs['management,_professional,_and_related_occupations_(%)'] < 25.5 ){ jQuery("#management").css("color","red");} if(cs['management,_professional,_and_related_occupations_(%)'] > 33.1){ jQuery("#management").css("color","blue");}; // 25.5 - 29.8 - 33.1
-	if(cs['production,_transportation,_and_material_moving_occupations_(%)'] < 11.7 ){ jQuery("#production").css("color","red");} if(cs['production,_transportation,_and_material_moving_occupations_(%)'] > 20.2){ jQuery("#production").css("color","blue");}; // 11.7 - 15.7 - 20.2
-	if(cs['sales_and_office_occupations_(%)'] < 20.7 ){ jQuery("#sales").css("color","red");} if(cs['sales_and_office_occupations_(%)'] > 25.4){ jQuery("#sales").css("color","blue");}; 
-	if(cs['service_occupations_(%)_'] < 15.2 ){ jQuery("#services").css("color","red");} if(cs['service_occupations_(%)_'] > 19.2){ jQuery("#services").css("color","blue");}; 
+	if(typeof(cs['wconstruct']) != "number") cs['wconstruct'] = parseFloat(cs['wconstruct'].trim().replace(",","").replace(",","")); 
+	if(typeof(cs['wfarm']) != "number") cs['wfarm'] = parseFloat(cs['wfarm'].trim().replace(",","").replace(",",""));
+	if(typeof(cs['wmanage']) != "number") cs['wmanage'] = parseFloat(cs['wmanage'].trim().replace(",","").replace(",",""));
+	if(typeof(cs['wtransport']) != "number") cs['wtransport'] = parseFloat(cs['wtransport'].trim().replace(",","").replace(",","")); 
+	if(typeof(cs['wsales']) != "number") cs['wsales'] = parseFloat(cs['wsales'].trim().replace(",","").replace(",","")); 
+
+	if(typeof(cs['serviceoccupations']) != "number") cs['serviceoccupations'] = servicenum;
+
+	if(cs['wconstruct'] < 9.2 ){ jQuery("#construction").css("color","red");} if(cs['wconstruct'] > 13.3){ jQuery("#construction").css("color","blue");} ; // 9.2 - 11.1 - 13.3
+	if(cs['wfarm'] < .5 ){ jQuery("#fishing").css("color","red");} if(cs['wfarm'] > 2.7){ jQuery("#fishing").css("color","blue");};  // .5 - 1.2 - 2.7
+	if(cs['wmanage'] < 25.5 ){ jQuery("#management").css("color","red");} if(cs['wmanage'] > 33.1){ jQuery("#management").css("color","blue");}; // 25.5 - 29.8 - 33.1
+	if(cs['wtransport'] < 11.7 ){ jQuery("#production").css("color","red");} if(cs['wtransport'] > 20.2){ jQuery("#production").css("color","blue");}; // 11.7 - 15.7 - 20.2
+	if(cs['wsales'] < 20.7 ){ jQuery("#sales").css("color","red");} if(cs['wsales'] > 25.4){ jQuery("#sales").css("color","blue");}; 
+
+	if(servicenum < 15.2 ){ jQuery("#services").css("color","red");} if(servicenum > 19.2){ jQuery("#services").css("color","blue");}; 
+
+
+	//Now Highlight Public Health
+	//["female", "adultobese", "airpollutionq", "ambulatorycare", "dentistratio", "diabectic", "drivealone", "excsdrinking", "fairpoorhealth", "fastfoodresp", "freelunch", "gini", "healthcosts", "healthyfood", "illiteracy", "lowbirthrate", "mammography", "mentaldays", "motordeath", "mphratio", "noemotionalsupport", "noenglish", "physicianratio", "recfac", "rural", "sickdays", "singleparent", "smokers", "stdsper100", "teenbirthrate", "unemployed", "uninsured.x", "violentcrime"]
+	phquartiles = [[49.5,51.2],[28,33],[1,3],[59,94],[],[9,12],[75,82],[10.05,18],[13,20.48],[36,54],[26,47],[.407,.454],[7923,10161],[33,71],[8.3,15.9],[6.8,9.2],[59.1,70],[2.8,4.1],[16,32],
+		    	[],[16,22.3],[.8,3.8],[],[0,11.4],[35.8,89.1],[3,4.4],[24,36],[17,25],[132,374],[31,61],[7.1,11.1],[14,22],[120,378]];
+	
+	for(var i=0; i < phvars.length; i++)
+	{
+		qs = phquartiles[i];
+		vs = cs[phvars[i]];
+		vt = phvars[i];
+		if(vt.indexOf("ratio") == -1)
+		{
+			if(!isNaN(parseFloat(vs)))
+			{
+				console.log(i+ ": " +vt+", "+ vs+ " --- "+qs[0]+"...."+qs[1]);
+				if(vs < qs[0] ){ jQuery("#"+vt).css("color","blue");} 
+				if(vs > qs[1] ){ jQuery("#"+vt).css("color","red");};
+			}
+		}
+	}
+	if(100 - parseFloat(cs['female']) < 48.8 ){ jQuery("#male").css("color","blue");} if(100 - parseFloat(cs['female']) > 50.5){ jQuery("#male").css("color","red");};
+
 
 	  jQuery("#inc").click(function(){ 
 		if(jQuery("#inc").html() == "-"){ jQuery("#includes").hide(); jQuery("#inc").html("+"); }
@@ -678,6 +712,10 @@ function display_county_info(id)
 	  jQuery("#sinc").click(function(){ 
 		if(jQuery("#sinc").html() == "-"){ jQuery("#sincludes").hide(); jQuery("#sinc").html("+"); }
 		else { jQuery("#sincludes").show(); jQuery("#sinc").html("-"); }
+	 });
+	  jQuery("#pinc").click(function(){ 
+		if(jQuery("#pinc").html() == "-"){ jQuery("#pincludes").hide(); jQuery("#pinc").html("+"); }
+		else { jQuery("#pincludes").show(); jQuery("#pinc").html("-"); }
 	 });
 }
 
@@ -735,6 +773,8 @@ function handleclick(d){
 }
 
 function mouseover(d) {
+	jQuery(".statement").css("display","block");
+
 	if(clicked == 0 && islandtoggle ==0 && demtoggle == 0 && reptoggle == 0 && harddemtoggle == 0 && hardgoptoggle == 0 && highestdemtoggle == 0 && highestgoptoggle == 0){
 		c = d3.select(this).attr("class");
 		if( c != "q3-9")
